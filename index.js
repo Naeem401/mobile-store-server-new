@@ -49,6 +49,19 @@ async function run() {
       }
     });
 
+    // Search functionality
+    app.get("/search", async (req, res) => {
+        const searchQuery = req.query.q;
+        try {
+          const products = await allMobilesCollection.find({
+            name: { $regex: searchQuery, $options: 'i' }
+          }).toArray();
+          res.json(products);
+        } catch (error) {
+          res.status(500).json({ message: error.message });
+        }
+      });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
@@ -63,9 +76,9 @@ run();
 
 
 app.get("/", (req, res) => {
-    res.send("Asia Adventures Hub Server is running!");
+    res.send("Mobile Store Server is running!");
   });
 
   app.listen(port, () => {
-    console.log(`Asia Adventures Hub is running on Port:${port}`);
+    console.log(`Mobile Store is running on Port:${port}`);
   });
