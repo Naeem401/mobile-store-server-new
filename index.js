@@ -62,6 +62,38 @@ async function run() {
         }
       });
 
+      // Filter functionality
+    app.get("/filter", async (req, res) => {
+        const { brand, category, minPrice, maxPrice, sortBy } = req.query;
+  
+        try {
+          const filters = {};
+          if (brand) filters.brand = brand;
+          if (category) filters.category = category;
+          if (minPrice && maxPrice) {
+            filters.price = { $gte: Number(minPrice), $lte: Number(maxPrice) };
+          } else if (minPrice) {
+            filters.price = { $gte: Number(minPrice) };
+          } else if (maxPrice) {
+            filters.price = { $lte: Number(maxPrice) };
+          }
+  
+          const sortOptions = {};
+          if (sortBy === 'priceLowToHigh') {
+            sortOptions.price = 1;
+          } else if (sortBy === 'priceHighToLow') {
+            sortOptions.price = -1;
+          } else if (sortBy === 'dateNewest') {
+            sortOptions.dateAdded = -1;
+          }
+  
+          const products = await allMobilesCollection.find(filters).sort(sortOptions).toArray();
+          res.json(products);
+        } catch (error) {
+          res.status(500).json({ message: error.message });
+        }
+      });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
